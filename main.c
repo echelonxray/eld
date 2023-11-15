@@ -54,6 +54,13 @@ void parse_elf(int fd) {
 	}
 	printf("\n");
 	
+	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
+		free(elf_scts[i]);
+	}
+	free(elf_scts);
+	free(elf_shs);
+	free(elf_phs);
+	
 	return;
 }
 
