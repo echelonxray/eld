@@ -48,8 +48,8 @@ int elf_load_header(int fd, ELF32_Header* elf_header) {
 		}
 	}
 	
+	// Validate Header
 	{
-		// Validate Header
 		if (strncmp(elf_header_tmp.ei_magic, ELFH_EI_MAGIC, ELFH_EI_MAGICLEN)) {
 			fprintf(stderr, "[File: \"%s\", Line: %d] Validation failure.\n", __FILE__,  __LINE__);
 			exit(1);
@@ -98,15 +98,15 @@ int elf_load_header(int fd, ELF32_Header* elf_header) {
 			fprintf(stderr, "[File: \"%s\", Line: %d] Validation failure.\n", __FILE__,  __LINE__);
 			exit(1);
 		}
-		/*
-		if (elf_header_tmp.e_phentsize != sizeof(ELF32_Program_Header)) {
-			fprintf(stderr, "elf_header_tmp.e_phentsize: %d\n", elf_header_tmp.e_phentsize);
-			fprintf(stderr, "sizeof(ELF32_Program_Header): %d\n", (int)sizeof(ELF32_Program_Header));
+		if (elf_header_tmp.e_phentsize != sizeof(ELF32_Program_Header) && elf_header_tmp.e_phnum > 0) {
 			fprintf(stderr, "[File: \"%s\", Line: %d] Validation failure.\n", __FILE__,  __LINE__);
 			exit(1);
 		}
-		*/
-		if (elf_header_tmp.e_shentsize != sizeof(ELF32_Section_Header)) {
+		if (elf_header_tmp.e_shentsize != sizeof(ELF32_Section_Header) && elf_header_tmp.e_shnum > 0) {
+			fprintf(stderr, "[File: \"%s\", Line: %d] Validation failure.\n", __FILE__,  __LINE__);
+			exit(1);
+		}
+		if (elf_header_tmp.e_phnum > 0) {
 			fprintf(stderr, "[File: \"%s\", Line: %d] Validation failure.\n", __FILE__,  __LINE__);
 			exit(1);
 		}
