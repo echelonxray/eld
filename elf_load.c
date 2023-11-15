@@ -29,7 +29,7 @@ char* elf_get_section_string(void* restrict data, ELF32_Section_Header* restrict
 	return data2 + secindex;
 }
 
-int elf_load_header(int fd, ELF32_Header* elf_header) {
+void elf_load_header(int fd, ELF32_Header* elf_header) {
 	{
 		off_t retval;
 		retval = lseek(fd, 0, SEEK_SET);
@@ -115,10 +115,10 @@ int elf_load_header(int fd, ELF32_Header* elf_header) {
 	
 	memcpy(elf_header, &elf_header_tmp, sizeof(elf_header_tmp));
 	
-	return 0;
+	return;
 }
 
-int elf_load_program_header(int fd, ELF32_Program_Header* elf_program_header, ELF32_Header* elf_header, uint16_t program_index) {
+void elf_load_program_header(int fd, ELF32_Program_Header* elf_program_header, ELF32_Header* elf_header, uint16_t program_index) {
 	if (program_index >= elf_header->e_phnum) {
 		fprintf(stderr, "[File: \"%s\", Line: %d] Program header index out of bounds.\n", __FILE__,  __LINE__);
 		exit(1);
@@ -155,10 +155,9 @@ int elf_load_program_header(int fd, ELF32_Program_Header* elf_program_header, EL
 	
 	memcpy(elf_program_header, &elf_program_header_tmp, sizeof(elf_program_header_tmp));
 	
-	return 0;
+	return;
 }
-
-int elf_load_section_header(int fd, ELF32_Section_Header* elf_section_header, ELF32_Header* elf_header, uint16_t section_index) {
+void elf_load_section_header(int fd, ELF32_Section_Header* elf_section_header, ELF32_Header* elf_header, uint16_t section_index) {
 	if (section_index >= elf_header->e_shnum) {
 		fprintf(stderr, "[File: \"%s\", Line: %d] Section header index out of bounds.\n", __FILE__,  __LINE__);
 		exit(1);
@@ -195,13 +194,13 @@ int elf_load_section_header(int fd, ELF32_Section_Header* elf_section_header, EL
 	
 	memcpy(elf_section_header, &elf_section_header_tmp, sizeof(elf_section_header_tmp));
 	
-	return 0;
+	return;
 }
 
-int elf_load_section_body(int fd, void** restrict buffer_ptr, ELF32_Section_Header* restrict elf_section_header) {
+void elf_load_section_body(int fd, void** restrict buffer_ptr, ELF32_Section_Header* restrict elf_section_header) {
 	if (elf_section_header->sh_type == SHT_NOBITS) {
 		*buffer_ptr = NULL;
-		return 0;
+		return;
 	}
 	
 	{
@@ -233,5 +232,81 @@ int elf_load_section_body(int fd, void** restrict buffer_ptr, ELF32_Section_Head
 	
 	*buffer_ptr = buffer;
 	
-	return 0;
+	return;
+}
+
+void elf_load(int fd, ELF32_Data* elf_data) {
+	ELF32_Header elf_header;
+	ELF32_Program_Header* elf_phs;
+	ELF32_Section_Header* elf_shs;
+	void** elf_scts;
+	
+	elf_load_header(fd, &elf_header);
+	
+	elf_phs = malloc(elf_header.e_phnum * sizeof(*elf_phs));
+	if (elf_header.e_phnum > 0 && elf_phs == NULL) {
+		fprintf(stderr, "[File: \"%s\", Line: %d] malloc() error.\n", __FILE__,  __LINE__);
+		exit(1);
+	}
+	elf_shs = malloc(elf_header.e_shnum * sizeof(*elf_shs));
+	if (elf_header.e_shnum > 0 && elf_shs == NULL) {
+		fprintf(stderr, "[File: \"%s\", Line: %d] malloc() error.\n", __FILE__,  __LINE__);
+		exit(1);
+	}
+	elf_scts = malloc(elf_header.e_shnum * sizeof(*elf_scts));
+	if (elf_header.e_shnum > 0 && elf_scts == NULL) {
+		fprintf(stderr, "[File: \"%s\", Line: %d] malloc() error.\n", __FILE__,  __LINE__);
+		exit(1);
+	}
+	
+	for (uint16_t i = 0; i < elf_header.e_phnum; i++) {
+		elf_load_program_header(fd, elf_phs + i, &elf_header, i);
+	}
+	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
+		elf_load_section_header(fd, elf_shs + i, &elf_header, i);
+	}
+	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
+		elf_load_section_body(fd, elf_scts + i, elf_shs + i);
+	}
+	
+	// Validate section name strings
+	//printf("Sections (Count: %d): \n", elf_header.e_shnum);
+	ELF32_Section_Header* names_sec_hdr;
+	void* names_sec_dat;
+	names_sec_hdr = elf_shs + elf_header.e_shstrndx;
+	names_sec_dat = elf_scts[elf_header.e_shstrndx];
+	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
+		//char* sec_name;
+		//sec_name = elf_get_section_string(names_sec_dat, names_sec_hdr, elf_shs[i].sh_name);
+		//printf("\t[%02u] \"%s\"\n", i, sec_name);
+		elf_get_section_string(names_sec_dat, names_sec_hdr, elf_shs[i].sh_name);
+	}
+	//printf("\n");
+	
+	elf_data->elf_hdr = elf_header;
+	elf_data->elf_phs = elf_phs;
+	elf_data->elf_shs = elf_shs;
+	elf_data->elf_sda = elf_scts;
+	
+	return;
+}
+void elf_unload(ELF32_Data* elf_data) {
+	ELF32_Header elf_header;
+	ELF32_Program_Header* elf_phs;
+	ELF32_Section_Header* elf_shs;
+	void** elf_scts;
+	
+	elf_header = elf_data->elf_hdr;
+	elf_phs    = elf_data->elf_phs;
+	elf_shs    = elf_data->elf_shs;
+	elf_scts   = elf_data->elf_sda;
+	
+	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
+		free(elf_scts[i]);
+	}
+	free(elf_scts);
+	free(elf_shs);
+	free(elf_phs);
+	
+	return;
 }
