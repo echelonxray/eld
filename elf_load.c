@@ -1,3 +1,4 @@
+#include "elf_load.h"
 #include "elf.h"
 #include <elf.h>
 #include <stdio.h>

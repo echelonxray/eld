@@ -8,7 +8,17 @@
 
 char* output_filename = "a.out";
 
-void parse_elf(int fd) {
+void print_sections(ELF32_Data* elf_data) {
+	printf("Sections (Count: %d): \n", elf_data->elf_hdr.e_shnum);
+	char* names_sec_dat;
+	names_sec_dat = elf_data->elf_sda[elf_data->elf_hdr.e_shstrndx];
+	for (uint16_t i = 0; i < elf_data->elf_hdr.e_shnum; i++) {
+		printf("\t[%02u] \"%s\"\n", i, names_sec_dat + elf_data->elf_shs[i].sh_name);
+	}
+	printf("\n");
+}
+
+void elf_load(int fd, ELF32_Data* elf_data) {
 	ELF32_Header elf_header;
 	ELF32_Program_Header* elf_phs;
 	ELF32_Section_Header* elf_shs;
@@ -42,17 +52,40 @@ void parse_elf(int fd) {
 		elf_load_section_body(fd, elf_scts + i, elf_shs + i);
 	}
 	
-	printf("Sections (Count: %d): \n", elf_header.e_shnum);
-	ELF32_Section_Header* section_names_header;
-	void* section_names_data;
-	section_names_header = elf_shs + elf_header.e_shstrndx;
-	section_names_data = elf_scts[elf_header.e_shstrndx];
+	// Validate section name strings
+	//printf("Sections (Count: %d): \n", elf_header.e_shnum);
+	ELF32_Section_Header* names_sec_hdr;
+	void* names_sec_dat;
+	names_sec_hdr = elf_shs + elf_header.e_shstrndx;
+	names_sec_dat = elf_scts[elf_header.e_shstrndx];
 	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
-		char* section_name;
-		section_name = elf_get_section_string(section_names_data, section_names_header, elf_shs[i].sh_name);
-		printf("\t[%02u] \"%s\"\n", i, section_name);
+		//char* sec_name;
+		//sec_name = elf_get_section_string(names_sec_dat, names_sec_hdr, elf_shs[i].sh_name);
+		//printf("\t[%02u] \"%s\"\n", i, sec_name);
+		elf_get_section_string(names_sec_dat, names_sec_hdr, elf_shs[i].sh_name);
 	}
-	printf("\n");
+	//printf("\n");
+	
+	elf_data->elf_hdr = elf_header;
+	elf_data->elf_phs = elf_phs;
+	elf_data->elf_shs = elf_shs;
+	elf_data->elf_sda = elf_scts;
+	
+	print_sections(elf_data);
+	
+	return;
+}
+
+void elf_unload(ELF32_Data* elf_data) {
+	ELF32_Header elf_header;
+	ELF32_Program_Header* elf_phs;
+	ELF32_Section_Header* elf_shs;
+	void** elf_scts;
+	
+	elf_header = elf_data->elf_hdr;
+	elf_phs    = elf_data->elf_phs;
+	elf_shs    = elf_data->elf_shs;
+	elf_scts   = elf_data->elf_sda;
 	
 	for (uint16_t i = 0; i < elf_header.e_shnum; i++) {
 		free(elf_scts[i]);
@@ -74,7 +107,9 @@ int main(int argc, char* argv[]) {
 		}
 		
 		printf("File: \"%s\"\n", argv[i]);
-		parse_elf(fd);
+		ELF32_Data elf_data;
+		elf_load(fd, &elf_data);
+		elf_unload(&elf_data);
 		
 		close(fd);
 	}

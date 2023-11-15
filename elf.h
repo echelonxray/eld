@@ -49,6 +49,13 @@ typedef struct __attribute__((__packed__)) {
 	uint32_t   sh_entsize;    // Size: ELF Native RL
 } ELF32_Section_Header;
 
+typedef struct {
+	ELF32_Header elf_hdr;
+	ELF32_Program_Header* elf_phs;
+	ELF32_Section_Header* elf_shs;
+	void** elf_sda;
+} ELF32_Data;
+
 #define ELFH_EI_MAGIC               "\x7F" "ELF"
 #define ELFH_EI_MAGICLEN            4
 
