@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE
+
 #include "elf.h"
 #include "elf_load.h"
 #include <elf.h>
@@ -63,6 +65,10 @@ void print_relocs(ELF32_Data* elf_data) {
 }
 
 int main(int argc, char* argv[]) {
+	ELF32_Data* elf_data;
+	size_t elf_data_len;
+	elf_data = NULL;
+	elf_data_len = 0;
 	for (int i = 1; i < argc; i++) {
 		signed int fd;
 		fd = open(argv[i], O_RDONLY);
@@ -72,14 +78,21 @@ int main(int argc, char* argv[]) {
 		}
 		
 		printf("File: \"%s\"\n", argv[i]);
-		ELF32_Data elf_data;
-		elf_load(fd, &elf_data);
+		elf_data = reallocarray(elf_data, sizeof(*elf_data), elf_data_len + 1);
+		if (elf_data == NULL) {
+			fprintf(stderr, "[File: \"%s\", Line: %d] malloc() error.\n", __FILE__,  __LINE__);
+			exit(1);
+		}
+		elf_load(fd, elf_data + elf_data_len);
 		close(fd);
 		
-		print_sections(&elf_data);
-		print_relocs(&elf_data);
+		//print_sections(elf_data + elf_data_len);
+		//print_relocs(elf_data + elf_data_len);
 		
-		elf_unload(&elf_data);
+		elf_data_len++;
+	}
+	for (size_t i = 0; i < elf_data_len; i++) {
+		elf_unload(elf_data + i);
 	}
 	return 0;
 }
