@@ -14,6 +14,7 @@
 
 char* output_filename = "a.out";
 
+/*
 void print_sections(ELF32_Data* elf_data) {
 	printf("Sections (Count: %d): \n", elf_data->elf_hdr.e_shnum);
 	char* names_sec_dat;
@@ -59,6 +60,7 @@ void print_relocs(ELF32_Data* elf_data) {
 	printf("\n");
 	return;
 }
+*/
 
 int main(int argc, char* argv[]) {
 	ELF32_Data* elf_data;
