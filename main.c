@@ -107,7 +107,6 @@ int main(int argc, char* argv[]) {
 	order_section_layout(elf_data, &elf_layout);
 	GlobalSymbolTable g_syms;
 	generate_global_symbol_table(elf_data, &elf_layout, &g_syms);
-	print_global_symbol_table(elf_data, &g_syms);
 	// TODO: Resolve Symbol Offsets
 	// TODO: Generate .rela.dyn
 	// TODO: Generate DYNAMIC Table
