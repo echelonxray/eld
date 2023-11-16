@@ -1,5 +1,7 @@
 #define _DEFAULT_SOURCE
 
+#include "util.h"
+#include "sections.h"
 #include "elf.h"
 #include "elf_load.h"
 #include <elf.h>
@@ -11,12 +13,6 @@
 #include <unistd.h>
 
 char* output_filename = "a.out";
-
-int strcmp_prefix(char* str, char* prefix) {
-	size_t prefix_len;
-	prefix_len = strlen(prefix);
-	return strncmp(str, prefix, prefix_len);
-}
 
 void print_sections(ELF32_Data* elf_data) {
 	printf("Sections (Count: %d): \n", elf_data->elf_hdr.e_shnum);
@@ -91,6 +87,11 @@ int main(int argc, char* argv[]) {
 		
 		elf_data_len++;
 	}
+	
+	ELF_Section_Layout elf_layout;
+	build_section_layout(elf_data, &elf_layout, elf_data_len);
+	free_section_layout(&elf_layout);
+	
 	for (size_t i = 0; i < elf_data_len; i++) {
 		elf_unload(elf_data + i);
 	}

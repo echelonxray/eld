@@ -7,6 +7,8 @@ OUT            := eld
 FILES          := 
 
 FILES   := $(FILES) main.o
+FILES   := $(FILES) util.o
+FILES   := $(FILES) sections.o
 FILES   := $(FILES) elf.o
 FILES   := $(FILES) elf_load.o
 
