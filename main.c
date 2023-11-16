@@ -92,6 +92,16 @@ int main(int argc, char* argv[]) {
 	
 	ELF_Section_Layout elf_layout;
 	build_section_layout(elf_data, &elf_layout, elf_data_len);
+	// TODO: GC Sections
+	// TODO: Merge Sections
+	order_section_layout(elf_data, &elf_layout);
+	// TODO: Generate Global Symbol Table
+	// TODO: Resolve Symbol Offsets
+	// TODO: Generate .rela.dyn
+	// TODO: Generate DYNAMIC Table
+	// TODO: Do Relocations
+	// TODO: Relax Instructions
+	// TODO: Write out executable ELF
 	free_section_layout(&elf_layout);
 	
 	for (size_t i = 0; i < elf_data_len; i++) {

@@ -21,6 +21,7 @@ typedef struct {
 } ELF_Section_Layout;
 
 void build_section_layout(ELF32_Data* elf_data, ELF_Section_Layout* elf_sec_lay_buf, size_t elf_count);
+void order_section_layout(ELF32_Data* elf_data, ELF_Section_Layout* elf_sec_lay_buf);
 void free_section_layout(ELF_Section_Layout* elf_sec_lay_buf);
 
 #endif
