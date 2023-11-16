@@ -95,5 +95,6 @@ int main(int argc, char* argv[]) {
 	for (size_t i = 0; i < elf_data_len; i++) {
 		elf_unload(elf_data + i);
 	}
+	free(elf_data);
 	return 0;
 }
