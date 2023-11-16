@@ -125,3 +125,19 @@ void elf_get_sym(ELF32_Data* elf_data, Elf32_Sym* elf_sym, uint32_t symbol_index
 	exit(1);
 	return;
 }
+
+void elf_get_section(ELF32_Data* elf_data, ELF32_Section_Header* elf_sec, char* section_name) {
+	char* names_sec_dat;
+	names_sec_dat = elf_data->elf_sda[elf_data->elf_hdr.e_shstrndx];
+	for (uint16_t i = 0; i < elf_data->elf_hdr.e_shnum; i++) {
+		char* sec_name;
+		sec_name = names_sec_dat + elf_data->elf_shs[i].sh_name;
+		if (!strcmp(sec_name, section_name)) {
+			*elf_sec = elf_data->elf_shs[i];
+			return;
+		}
+	}
+	fprintf(stderr, "%s section not found.\n", section_name);
+	exit(1);
+	return;
+}

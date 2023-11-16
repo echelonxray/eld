@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "sections.h"
+#include "symbols.h"
 #include "elf.h"
 #include "elf_load.h"
 #include <elf.h>
@@ -60,6 +61,15 @@ void print_relocs(ELF32_Data* elf_data) {
 	printf("\n");
 	return;
 }
+void print_global_symbol_table(ELF32_Data* elf_data, GlobalSymbolTable* g_sym) {
+	for (size_t i = 0; i < g_sym->count; i++) {
+		GlobalSymbol sym = g_sym->symbols[i];
+		char* str;
+		str = elf_get_str(elf_data + sym.elf_data_index, sym.sym.st_name);
+		printf("%3u->%3u: \"%s\"\n", (int)sym.elf_data_index, (int)sym.local_index, str);
+	}
+	return;
+}
 */
 
 int main(int argc, char* argv[]) {
@@ -95,13 +105,16 @@ int main(int argc, char* argv[]) {
 	// TODO: GC Sections
 	// TODO: Merge Sections
 	order_section_layout(elf_data, &elf_layout);
-	// TODO: Generate Global Symbol Table
+	GlobalSymbolTable g_syms;
+	generate_global_symbol_table(elf_data, &elf_layout, &g_syms);
+	print_global_symbol_table(elf_data, &g_syms);
 	// TODO: Resolve Symbol Offsets
 	// TODO: Generate .rela.dyn
 	// TODO: Generate DYNAMIC Table
 	// TODO: Do Relocations
 	// TODO: Relax Instructions
 	// TODO: Write out executable ELF
+	free_global_symbol_table(&g_syms);
 	free_section_layout(&elf_layout);
 	
 	for (size_t i = 0; i < elf_data_len; i++) {

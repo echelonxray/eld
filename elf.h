@@ -166,5 +166,6 @@ char* elf_get_rela_type(uint32_t type);
 char* elf_get_str(ELF32_Data* elf_data, uint32_t string_index);
 char* elf_get_shstr(ELF32_Data* elf_data, uint32_t section_index);
 void elf_get_sym(ELF32_Data* elf_data, Elf32_Sym* elf_sym, uint32_t symbol_index);
+void elf_get_section(ELF32_Data* elf_data, ELF32_Section_Header* elf_sec, char* section_name);
 
 #endif
