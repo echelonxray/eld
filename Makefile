@@ -7,6 +7,7 @@ OUT            := eld
 FILES          := 
 
 FILES   := $(FILES) main.o
+FILES   := $(FILES) elf.o
 FILES   := $(FILES) elf_load.o
 
 .PHONY: all rebuild clean run

@@ -1,6 +1,7 @@
 #ifndef __HEADER_ELF_H
 #define __HEADER_ELF_H
 
+#include <elf.h>
 #include <stdint.h>
 
 typedef struct __attribute__((__packed__)) {
@@ -160,5 +161,10 @@ typedef struct {
 #define R_RISCV_TLSDESC_LOAD_LO12   63
 #define R_RISCV_TLSDESC_ADD_LO12    64
 #define R_RISCV_TLSDESC_CALL        65
+
+char* elf_get_rela_type(uint32_t type);
+char* elf_get_str(ELF32_Data* elf_data, uint32_t string_index);
+char* elf_get_shstr(ELF32_Data* elf_data, uint32_t section_index);
+void elf_get_sym(ELF32_Data* elf_data, Elf32_Sym* elf_sym, uint32_t symbol_index);
 
 #endif
