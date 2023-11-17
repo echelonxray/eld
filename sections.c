@@ -6,6 +6,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+size_t _fill_section_offsets(ELF32_Data* elf_data, ELF_Section_Ref* sec_ref, size_t count, size_t start_offset) {
+	for (size_t i = 0; i < count; i++) {
+		Elf32_Shdr sec_hdr;
+		sec_hdr = elf_data[sec_ref[i].elf_data_index].elf_shs[sec_ref[i].elf_data_section_index];
+		size_t addralign = sec_hdr.sh_addralign;
+		if (start_offset & (addralign - 1)) {
+			addralign = ~addralign;
+			start_offset &= addralign;
+			start_offset += sec_hdr.sh_addralign;
+		}
+		sec_ref[i].address = start_offset;
+		start_offset += sec_hdr.sh_size;
+	}
+	return start_offset;
+}
+void fill_section_offsets(ELF32_Data* elf_data, ELF_Section_Layout* elf_sec_lay_buf) {
+	size_t start_offset = 0;
+	
+	ELF_Section_Ref* text_refs = elf_sec_lay_buf->text_refs;
+	size_t s_text_count = elf_sec_lay_buf->s_text_count;
+	start_offset = _fill_section_offsets(elf_data, text_refs, s_text_count, start_offset);
+	
+	ELF_Section_Ref* rodata_refs = elf_sec_lay_buf->rodata_refs;
+	size_t s_rodata_count = elf_sec_lay_buf->s_rodata_count;
+	start_offset = _fill_section_offsets(elf_data, rodata_refs, s_rodata_count, start_offset);
+	
+	ELF_Section_Ref* data_refs = elf_sec_lay_buf->data_refs;
+	size_t s_data_count = elf_sec_lay_buf->s_data_count;
+	start_offset = _fill_section_offsets(elf_data, data_refs, s_data_count, start_offset);
+	
+	ELF_Section_Ref* bss_refs = elf_sec_lay_buf->bss_refs;
+	size_t s_bss_count = elf_sec_lay_buf->s_bss_count;
+	start_offset = _fill_section_offsets(elf_data, bss_refs, s_bss_count, start_offset);
+	
+	return;
+}
+
 void build_section_layout(ELF32_Data* elf_data, ELF_Section_Layout* elf_sec_lay_buf, size_t elf_count) {
 	ELF_Section_Ref* text_refs   = NULL;
 	ELF_Section_Ref* rodata_refs = NULL;

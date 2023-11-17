@@ -26,6 +26,7 @@ typedef struct __attribute__((__packed__)) {
 	uint16_t   e_shnum;
 	uint16_t   e_shstrndx;
 } ELF32_Header;
+/*
 typedef struct __attribute__((__packed__)) {
 	uint32_t   p_type;
 	//uint32_t   p_flags;    // Only on ELF64
@@ -49,11 +50,12 @@ typedef struct __attribute__((__packed__)) {
 	uint32_t   sh_addralign;  // Size: ELF Native RL
 	uint32_t   sh_entsize;    // Size: ELF Native RL
 } ELF32_Section_Header;
+*/
 
 typedef struct {
 	ELF32_Header elf_hdr;
-	ELF32_Program_Header* elf_phs;
-	ELF32_Section_Header* elf_shs;
+	Elf32_Phdr* elf_phs;
+	Elf32_Shdr* elf_shs;
 	void** elf_sda;
 } ELF32_Data;
 
@@ -166,6 +168,6 @@ char* elf_get_rela_type(uint32_t type);
 char* elf_get_str(ELF32_Data* elf_data, uint32_t string_index);
 char* elf_get_shstr(ELF32_Data* elf_data, uint32_t section_index);
 void elf_get_sym(ELF32_Data* elf_data, Elf32_Sym* elf_sym, uint32_t symbol_index);
-void elf_get_section(ELF32_Data* elf_data, ELF32_Section_Header* elf_sec, char* section_name);
+void elf_get_section(ELF32_Data* elf_data, Elf32_Shdr* elf_sec, char* section_name);
 
 #endif
