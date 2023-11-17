@@ -3,10 +3,24 @@
 #include "symbols.h"
 #include "sections.h"
 #include "elf.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <assert.h>
+
+void fill_symbol_offsets(GlobalSymbolTable* g_sym) {
+	for (size_t i = 0; i < g_sym->count; i++) {
+		ELF_Section_Ref* sec_ref = g_sym->symbols[i].in_section;
+		size_t section_address = sec_ref->address;
+		size_t value = g_sym->symbols[i].sym.st_value;
+		
+		size_t symbol_address = section_address + value;
+		g_sym->symbols[i].address = symbol_address;
+	}
+	
+	return;
+}
 
 void _generate_global_symbol_table(ELF32_Data* elf_data, ELF_Section_Ref* refs, GlobalSymbolTable* g_sym, size_t count) {
 	for (size_t i = 0; i < count; i++) {
@@ -22,6 +36,7 @@ void _generate_global_symbol_table(ELF32_Data* elf_data, ELF_Section_Ref* refs, 
 				g_sym->symbols[g_sym->count].elf_data_index = refs[i].elf_data_index;
 				g_sym->symbols[g_sym->count].local_index = j;
 				g_sym->symbols[g_sym->count].sym = elf_sym;
+				g_sym->symbols[g_sym->count].in_section = refs + i;
 				g_sym->count++;
 			}
 		}

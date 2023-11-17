@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 	GlobalSymbolTable g_syms;
 	generate_global_symbol_table(elf_data, &elf_layout, &g_syms);
 	fill_section_offsets(elf_data, &elf_layout);
-	// TODO: Resolve Symbol Offsets
+	fill_symbol_offsets(&g_syms);
 	// TODO: Generate .rela.dyn
 	// TODO: Generate DYNAMIC Table
 	// TODO: Do Relocations
